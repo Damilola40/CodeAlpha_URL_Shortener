@@ -1,10 +1,11 @@
 const inputField = document.querySelector(".link");
 const btn = document.querySelector(".link_btn");
+const resultDiv = document.getElementById("result");
 
 btn.addEventListener("click", async() => {
-    const originalURL = inputField.value;
+    const originalUrl = inputField.value;
 
-    if (!originalURL) {
+    if (!originalUrl) {
         alert("Please enter a URL");
         return;
     }
@@ -12,20 +13,20 @@ btn.addEventListener("click", async() => {
     try {
         const response = await fetch("/api/shorten", {
             method: "POST",
-            headers: {"Content-Type": "applicatio/json"},
-            body: JSON.stringify({originalURL})
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({originalUrl})
         });
 
         const data = await response.json();
                 
         if (response.ok) {
-            alert("Shortened URL: ${data.shortUrl}");
-            inputField = ""; //clear input
+            resultDiv.innerHTML = `<p>Shortened URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a></p>`;
+            inputField.value = ""; //clear input
         } else {
-            alert("Error: ${data.error}");
+            resultDiv.innerHTML = `<p>Error: ${data.error}</p>`;
         }
     } catch (error) {
-        alert("Error connecting to server");
+        resultDiv.innerHTML = `<p>Error connecting to server</p>`;
         console.error(error);
     }
 });

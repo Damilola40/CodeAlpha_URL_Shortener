@@ -15,32 +15,39 @@ app.post('/api/shorten', (req, res) => {
     // Validate URL
     try {
         new URL(originalUrl);
-    } catch {
+    } catch (error){
         return res.status(400).json({ error: 'Invalid URL' });
     }
 
     // Generate short code
     const shortCode = nanoid(6);
+    console.log(`Creating: ${shortCode} → ${originalUrl}`); // ✅ debug log
 
     // Save to database
     try {
-        db.prepare('INSERT INTO urls (short_code, original_url) VALUES (?, ?)').run(shortCode, originalUrl);
+        const result = db.prepare('INSERT INTO urls (short_code, original_url) VALUES (?, ?)').run(shortCode, originalUrl);
+        console.log(`Inserted successfully:`, result); // ✅ debug log
         res.json({ shortUrl: `http://localhost:${PORT}/${shortCode}` });
     } catch {
+        console.error('Insert error:', error); // ✅ debug log
         res.status(500).json({ error: 'Error creating short URL' });
     }
 });
 
 // GET endpoint to redirect
 app.get('/:shortCode', (req, res) => {
+    console.log('GET params:', req.params);
     const { shortCode } = req.params;
+    console.log(`Looking for shortCode: ${shortCode}`); // ✅ debug
+
     const row = db.prepare('SELECT original_url FROM urls WHERE short_code = ?').get(shortCode);
+    console.log(`Found row:`, row);
 
     if (!row) {
         return res.status(404).json({ error: 'Short URL not found' });
     }
 
-    res.redirect(row.original_url);
+    res.redirect(row.ORIGINAL_URL);
 });
 
 app.listen(PORT, () => {
